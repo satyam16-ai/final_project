@@ -16,6 +16,99 @@ pygame.mixer.init()
 # Paths to icons
 window_icon = 'alarm_alert_bell_internet_notice_notification_security_icon_127089.ico'
 notification_icon = 'alarm_alert_bell_internet_notice_notification_security_icon_127089.ico'
+def open_stopwatch():
+    stopwatch_window = Toplevel(root)
+    stopwatch_window.title("Stopwatch")
+    stopwatch_window.geometry("300x300")
+
+    # Keep the stopwatch window on top
+    stopwatch_window.wm_attributes("-topmost", 1)
+
+    stopwatch_label = tk.Label(stopwatch_window, text="00:00:00", font=("Helvetica", 30))
+    stopwatch_label.pack(pady=20)
+
+    is_running = [False]  # To track whether the stopwatch is running
+    is_timer_running = [False]  # To track whether the timer is running
+    elapsed_time = [0]  # Elapsed time in seconds for stopwatch
+    timer_seconds = [0]  # Store timer duration in seconds
+
+    def update_time():
+        """Update the stopwatch display every second."""
+        if is_running[0]:
+            elapsed_time[0] += 1
+            formatted_time = time.strftime('%H:%M:%S', time.gmtime(elapsed_time[0]))
+            stopwatch_label.config(text=formatted_time)
+            stopwatch_window.after(1000, update_time)
+
+    def start_stopwatch():
+        """Start the stopwatch."""
+        if not is_running[0] and not is_timer_running[0]:  # Prevent starting if timer is running
+            is_running[0] = True
+            update_time()
+
+    def stop():
+        """Stop both the stopwatch and the timer."""
+        is_running[0] = False
+        is_timer_running[0] = False
+
+    def reset():
+        """Reset both the stopwatch and the timer."""
+        is_running[0] = False
+        is_timer_running[0] = False
+        elapsed_time[0] = 0
+        timer_seconds[0] = 0
+        stopwatch_label.config(text="00:00:00")
+
+    def set_timer():
+        """Set a timer and count down."""
+        try:
+            timer_minutes = int(timer_entry.get())
+        except ValueError:
+            messagebox.showwarning("Invalid Input", "Please enter a valid number.")
+            return
+
+        if not is_timer_running[0] and not is_running[0]:  # Prevent starting if stopwatch is running
+            timer_seconds[0] = timer_minutes * 60
+            is_timer_running[0] = True
+            countdown()
+
+    def countdown():
+        """Handle the countdown for the timer."""
+        if timer_seconds[0] > 0 and is_timer_running[0]:
+            mins, secs = divmod(timer_seconds[0], 60)
+            formatted_time = '{:02d}:{:02d}'.format(mins, secs)
+            stopwatch_label.config(text=formatted_time)
+            timer_seconds[0] -= 1
+            stopwatch_window.after(1000, countdown)
+        else:
+            if is_timer_running[0]:  # Play sound only if timer was running
+                play_stopwatch_end_sound()
+                messagebox.showinfo("Timer Done", "Time's up!")
+            is_timer_running[0] = False  # Stop the timer
+
+    def play_stopwatch_end_sound():
+        """Play a sound when the timer ends."""
+        pygame.mixer.music.load("stopwatch_end_sound.mp3")  # Ensure you have this sound file
+        pygame.mixer.music.play()
+
+    # Timer Entry
+    timer_frame = tk.Frame(stopwatch_window)
+    timer_frame.pack(pady=10)
+
+    tk.Label(timer_frame, text="Set Timer (Minutes):").pack(side=tk.LEFT, padx=5)
+    timer_entry = tk.Entry(timer_frame, width=5)
+    timer_entry.pack(side=tk.LEFT)
+
+    tk.Button(stopwatch_window, text="Start Timer", command=set_timer).pack(pady=10)
+
+    # Control Buttons for Stopwatch and Timer
+    control_frame = tk.Frame(stopwatch_window)
+    control_frame.pack(pady=10)
+
+    tk.Button(control_frame, text="Start Stopwatch", command=start_stopwatch).pack(side=tk.LEFT, padx=5)
+    tk.Button(control_frame, text="Stop", command=stop).pack(side=tk.LEFT, padx=5)
+    tk.Button(control_frame, text="Reset", command=reset).pack(side=tk.LEFT, padx=5)
+
 def open_todo_list():
     todo_window = Toplevel(root)
     todo_window.title("To-Do List")
@@ -355,6 +448,9 @@ theme_toggle_button.pack(pady=10)
 # Start system tray icon
 threading.Thread(target=setup_system_tray, daemon=True).start()
 todo_menu = tk.Menu(menu_bar, tearoff=0)
+stopwatch_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Stopwatch", menu=stopwatch_menu)
+stopwatch_menu.add_command(label="Open Stopwatch", command=open_stopwatch)
 menu_bar.add_cascade(label="To-Do List", menu=todo_menu)
 todo_menu.add_command(label="Open To-Do List", command=open_todo_list)
 
