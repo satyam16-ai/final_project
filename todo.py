@@ -9,6 +9,7 @@ import os
 import json
 from PIL import Image, ImageDraw
 import pystray
+import requests
 
 # Initialize pygame mixer for playing sounds
 pygame.mixer.init()
@@ -359,6 +360,42 @@ def setup_system_tray():
 
 def open_app(icon, item):
     root.deiconify()  # Show the window
+def fetch_weather(city):
+    api_key = 'aec27642d2d44100a25113139241209'  # Replace with your WeatherAPI key
+    url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={city}&aqi=no"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        if 'current' in data:
+            weather_info = {
+                'city': city,
+                'temperature': data['current']['temp_c'],
+                'condition': data['current']['condition']['text'],
+                'humidity': data['current']['humidity'],
+                'wind': data['current']['wind_kph']
+            }
+            return weather_info
+        else:
+            return {'error': 'City not found or API error'}
+    except requests.exceptions.RequestException as e:
+        return {'error': str(e)}
+
+def display_weather():
+    city = city_entry.get()
+    weather_info = fetch_weather(city)
+    
+    if 'error' in weather_info:
+        weather_label.config(text=weather_info['error'])
+    else:
+        weather_label.config(
+            text=f"City: {weather_info['city']}\n"
+                 f"Temperature: {weather_info['temperature']}°C\n"
+                 f"Condition: {weather_info['condition']}\n"
+                 f"Humidity: {weather_info['humidity']}%\n"
+                 f"Wind: {weather_info['wind']} kph"
+        )
 
 # Main Application Window
 root = tk.Tk()
@@ -444,6 +481,17 @@ threading.Thread(target=start_checking, daemon=True).start()
 # Theme Toggle Button
 theme_toggle_button = tk.Button(root, text="Toggle Theme", command=toggle_theme)
 theme_toggle_button.pack(pady=10)
+weather_frame = ttk.Frame(root)
+weather_frame.pack(pady=10)
+
+tk.Label(weather_frame, text="Enter City:", font=("Helvetica", 10)).pack(side=tk.LEFT, padx=5)
+city_entry = tk.Entry(weather_frame, width=20)
+city_entry.pack(side=tk.LEFT, padx=5)
+
+tk.Button(weather_frame, text="Get Weather", command=display_weather).pack(side=tk.LEFT, padx=5)
+
+weather_label = tk.Label(weather_frame, text="", font=("Helvetica", 10))
+weather_label.pack(pady=10)
 
 # Start system tray icon
 threading.Thread(target=setup_system_tray, daemon=True).start()
