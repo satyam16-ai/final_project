@@ -1,0 +1,216 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 5
+
+// Ordinary Queue using Array
+int arrQueue[MAX], front = -1, rear = -1;
+void enqueueArray() {
+    if (rear == MAX - 1)
+        printf("Queue is full!\n");
+    else {
+        int value;
+        printf("Enter value to enqueue: ");
+        scanf("%d", &value);
+        if (front == -1)
+            front = 0;
+        arrQueue[++rear] = value;
+        printf("Enqueued %d\n", value);
+    }
+}
+
+void dequeueArray() {
+    if (front == -1 || front > rear)
+        printf("Queue is empty!\n");
+    else {
+        printf("Dequeued %d\n", arrQueue[front++]);
+        if (front > rear)
+            front = rear = -1;
+    }
+}
+
+void displayArrayQueue() {
+    if (front == -1)
+        printf("Queue is empty!\n");
+    else {
+        printf("Queue elements: ");
+        for (int i = front; i <= rear; i++)
+            printf("%d ", arrQueue[i]);
+        printf("\n");
+    }
+}
+
+// Circular Queue using Array
+int circQueue[MAX], cFront = -1, cRear = -1;
+void enqueueCircular() {
+    if ((cRear + 1) % MAX == cFront)
+        printf("Circular Queue is full!\n");
+    else {
+        int value;
+        printf("Enter value to enqueue: ");
+        scanf("%d", &value);
+        if (cFront == -1)
+            cFront = 0;
+        cRear = (cRear + 1) % MAX;
+        circQueue[cRear] = value;
+        printf("Enqueued %d\n", value);
+    }
+}
+
+void dequeueCircular() {
+    if (cFront == -1)
+        printf("Circular Queue is empty!\n");
+    else {
+        printf("Dequeued %d\n", circQueue[cFront]);
+        if (cFront == cRear)
+            cFront = cRear = -1;
+        else
+            cFront = (cFront + 1) % MAX;
+    }
+}
+
+void displayCircularQueue() {
+    if (cFront == -1)
+        printf("Circular Queue is empty!\n");
+    else {
+        printf("Queue elements: ");
+        int i = cFront;
+        while (1) {
+            printf("%d ", circQueue[i]);
+            if (i == cRear)
+                break;
+            i = (i + 1) % MAX;
+        }
+        printf("\n");
+    }
+}
+
+// Ordinary Queue using Linked List
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+Node* frontList = NULL;
+Node* rearList = NULL;
+
+void enqueueLinkedList() {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+    printf("Enter value to enqueue: ");
+    int value;
+    scanf("%d", &value);
+    newNode->data = value;
+    newNode->next = NULL;
+    if (!rearList) {
+        frontList = rearList = newNode;
+    } else {
+        rearList->next = newNode;
+        rearList = newNode;
+    }
+    printf("Enqueued %d\n", value);
+}
+
+void dequeueLinkedList() {
+    if (!frontList)
+        printf("Queue is empty!\n");
+    else {
+        Node* temp = frontList;
+        printf("Dequeued %d\n", temp->data);
+        frontList = frontList->next;
+        if (!frontList)
+            rearList = NULL;
+        free(temp);
+    }
+}
+
+void displayLinkedListQueue() {
+    if (!frontList)
+        printf("Queue is empty!\n");
+    else {
+        printf("Queue elements: ");
+        Node* temp = frontList;
+        while (temp) {
+            printf("%d ", temp->data);
+            temp = temp->next;
+        }
+        printf("\n");
+    }
+}
+
+// Main menu
+int main() {
+    int choice, subChoice;
+    while (1) {
+        printf("\n=== Queue Implementation Menu ===\n");
+        printf("1. Ordinary Queue using Array\n");
+        printf("2. Circular Queue using Array\n");
+        printf("3. Ordinary Queue using Linked List\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("\n-- Ordinary Queue using Array --\n");
+                printf("1. Enqueue\n");
+                printf("2. Dequeue\n");
+                printf("3. Display\n");
+                printf("4. Back to Main Menu\n");
+                printf("Enter your choice: ");
+                scanf("%d", &subChoice);
+                switch (subChoice) {
+                    case 1: enqueueArray(); break;
+                    case 2: dequeueArray(); break;
+                    case 3: displayArrayQueue(); break;
+                    case 4: break;
+                    default: printf("Invalid choice!\n");
+                }
+                break;
+
+            case 2:
+                printf("\n-- Circular Queue using Array --\n");
+                printf("1. Enqueue\n");
+                printf("2. Dequeue\n");
+                printf("3. Display\n");
+                printf("4. Back to Main Menu\n");
+                printf("Enter your choice: ");
+                scanf("%d", &subChoice);
+                switch (subChoice) {
+                    case 1: enqueueCircular(); break;
+                    case 2: dequeueCircular(); break;
+                    case 3: displayCircularQueue(); break;
+                    case 4: break;
+                    default: printf("Invalid choice!\n");
+                }
+                break;
+
+            case 3:
+                printf("\n-- Ordinary Queue using Linked List --\n");
+                printf("1. Enqueue\n");
+                printf("2. Dequeue\n");
+                printf("3. Display\n");
+                printf("4. Back to Main Menu\n");
+                printf("Enter your choice: ");
+                scanf("%d", &subChoice);
+                switch (subChoice) {
+                    case 1: enqueueLinkedList(); break;
+                    case 2: dequeueLinkedList(); break;
+                    case 3: displayLinkedListQueue(); break;
+                    case 4: break;
+                    default: printf("Invalid choice!\n");
+                }
+                break;
+
+            case 4:
+                printf("Exiting program...\n");
+                return 0;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+}
